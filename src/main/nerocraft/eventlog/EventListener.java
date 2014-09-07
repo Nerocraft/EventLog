@@ -49,9 +49,11 @@ public class EventListener implements Listener {
         }
     }
 
-    public void printString(Player victim, double damage, String damager, boolean isNPC, String shooter) {
+    public void printString(Player victim, double damageDealt, String damager, boolean isNPC, String shooter) {
+        double damage = Math.round(damageDealt * 100.0D) / 100.0D;
+        double health = Math.round(victim.getHealth() * 100.0D) / 100.0D;
         String finalString = victim.getName() + " took " + Double.toString(damage) + " damage from "
-                + damager + (isNPC ? " (NPC)" : "") + (shooter != null ? " (" + shooter + ")" : "") + " (" + Double.toString(victim.getHealth()) + "/"
+                + damager + (isNPC ? " (NPC)" : "") + (shooter != null ? " (" + shooter + ")" : "") + " (" + Double.toString(health) + "/"
                 + Double.toString(victim.getMaxHealth()) + " Health)";
         Bukkit.getLogger().log(Level.INFO, finalString);
     }
