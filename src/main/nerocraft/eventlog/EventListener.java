@@ -4,6 +4,7 @@ package main.nerocraft.eventlog;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -28,13 +29,21 @@ public class EventListener implements Listener {
             String damager = damagerType.toString();
             String shooter = null;
             boolean isNPC = false;
-            double damage = event.getFinalDamage();
+            Material item = null;
+
+            if (event.getDamager() instanceof LivingEntity) {
+                item = ((LivingEntity) event.getDamager()).getEquipment().getItemInHand().getType();
+                if (item == Material.AIR) {
+                    item = null;
+                }
+            }
 
             if (util.isNPC(victim)) return;
             if (damagerType == EntityType.PLAYER) {
                 if (util.isNPC((Player) event.getDamager())) isNPC = true;
                 damager = ((Player) event.getDamager()).getName();
             }
+
             if (event.getCause() == DamageCause.PROJECTILE) {
                 ProjectileSource source = ((Projectile) event.getDamager()).getShooter();
                 if (source instanceof LivingEntity) {
@@ -45,15 +54,16 @@ public class EventListener implements Listener {
                 }
             }
 
-            printString(victim, damage, damager, isNPC, shooter);
+            printString(victim, event.getFinalDamage(), damager, isNPC, shooter, item);
         }
     }
 
-    public void printString(Player victim, double damageDealt, String damager, boolean isNPC, String shooter) {
+    public void printString(Player victim, double damageDealt, String damager, boolean isNPC, String shooter, Material item) {
         double damage = Math.round(damageDealt * 100.0D) / 100.0D;
         double health = Math.round(victim.getHealth() * 100.0D) / 100.0D;
         String finalString = victim.getName() + " took " + Double.toString(damage) + " damage from "
-                + damager + (isNPC ? " (NPC)" : "") + (shooter != null ? " (" + shooter + ")" : "") + " (" + Double.toString(health) + "/"
+                + damager + (isNPC ? " (NPC)" : "") + (item != null ? " holding " + item.toString() : "")
+                + (shooter != null ? " (" + shooter + ")" : "") + " (" + Double.toString(health) + "/"
                 + Double.toString(victim.getMaxHealth()) + " Health)";
         Bukkit.getLogger().log(Level.INFO, finalString);
     }
@@ -74,7 +84,7 @@ public class EventListener implements Listener {
                 break;
             }
 
-            printString((Player) event.getEntity(), event.getFinalDamage(), event.getCause().toString(), false, null);
+            printString((Player) event.getEntity(), event.getFinalDamage(), event.getCause().toString(), false, null, null);
         }
     }
 }
