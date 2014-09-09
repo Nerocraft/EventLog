@@ -20,8 +20,6 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
 public class EventListener implements Listener {
-    Util util = new Util();
-
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (event.isCancelled()) return;
@@ -40,9 +38,9 @@ public class EventListener implements Listener {
                 }
             }
 
-            if (util.isNPC(victim)) return;
+            if (Util.isNPC(victim)) return;
             if (damagerType == EntityType.PLAYER) {
-                if (util.isNPC((Player) event.getDamager())) isNPC = true;
+                if (Util.isNPC((Player) event.getDamager())) isNPC = true;
                 damager = ((Player) event.getDamager()).getName();
             }
 

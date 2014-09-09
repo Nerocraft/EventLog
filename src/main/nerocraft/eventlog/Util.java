@@ -9,7 +9,7 @@ public class Util {
      * @param player the player
      * @return true if player is an NPC, otherwise false
      */
-    public boolean isNPC(Player player) {
+    public static boolean isNPC(Player player) {
         return player.hasMetadata("NPC");
     }
 }
