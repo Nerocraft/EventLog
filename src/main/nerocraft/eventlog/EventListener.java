@@ -4,6 +4,7 @@ package main.nerocraft.eventlog;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -15,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
 public class EventListener implements Listener {
@@ -54,18 +56,23 @@ public class EventListener implements Listener {
                 }
             }
 
-            printString(victim, event.getFinalDamage(), damager, isNPC, shooter, item);
+            logDamage(victim, event.getFinalDamage(), damager, isNPC, shooter, item);
         }
     }
 
-    public void printString(Player victim, double damageDealt, String damager, boolean isNPC, String shooter, Material item) {
-        double damage = Math.round(damageDealt * 100.0D) / 100.0D;
-        double health = Math.round(victim.getHealth() * 100.0D) / 100.0D;
-        String finalString = victim.getName() + " took " + Double.toString(damage) + " damage from "
-                + damager + (isNPC ? " (NPC)" : "") + (item != null ? " holding " + item.toString() : "")
-                + (shooter != null ? " (" + shooter + ")" : "") + " (" + Double.toString(health) + "/"
-                + Double.toString(victim.getMaxHealth()) + " Health)";
-        Bukkit.getLogger().log(Level.INFO, finalString);
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        String name = event.getPlayer().getName();
+        Location loc = event.getPlayer().getLocation();
+        double x = Math.round(loc.getX() * 10.0D) / 10.0D;
+        double y = Math.round(loc.getY() * 10.0D) / 10.0D;
+        double z = Math.round(loc.getZ() * 10.0D) / 10.0D;
+
+        if (event.isCancelled()) {
+            Bukkit.getLogger().log(Level.INFO, name + (event.getPlayer().isInfected() ? " (Infected)" : "") + " denied access to " + event.getInventory().getType().toString() + " (" + Double.toString(x) + ", " + Double.toString(y) + ", " + Double.toString(z) + ")");
+        } else {
+            Bukkit.getLogger().log(Level.INFO, name + " interacted with " + event.getInventory().getType().toString() + " (" + Double.toString(x) + ", " + Double.toString(y) + ", " + Double.toString(z) + ")");
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -84,7 +91,17 @@ public class EventListener implements Listener {
                 break;
             }
 
-            printString((Player) event.getEntity(), event.getFinalDamage(), event.getCause().toString(), false, null, null);
+            logDamage((Player) event.getEntity(), event.getFinalDamage(), event.getCause().toString(), false, null, null);
         }
+    }
+
+    public void logDamage(Player victim, double damageDealt, String damager, boolean isNPC, String shooter, Material item) {
+        double damage = Math.round(damageDealt * 100.0D) / 100.0D;
+        double health = Math.round(victim.getHealth() * 100.0D) / 100.0D;
+        String finalString = victim.getName() + " took " + Double.toString(damage) + " damage from "
+                + damager + (isNPC ? " (NPC)" : "") + (item != null ? " holding " + item.toString() : "")
+                + (shooter != null ? " (" + shooter + ")" : "") + " (" + Double.toString(health) + "/"
+                + Double.toString(victim.getMaxHealth()) + " Health)";
+        Bukkit.getLogger().log(Level.INFO, finalString);
     }
 }
